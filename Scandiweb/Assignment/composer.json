@@ -1,0 +1,22 @@
+{
+    "name": "scandiweb/module-assignment",
+    "description": "Magento 2 Test Assignment",
+    "type": "magento2-module",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "scandiweb",
+            "email": "pramodguptabt07@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Scandiweb\\Assignment\\": ""
+        }
+    }
+}
