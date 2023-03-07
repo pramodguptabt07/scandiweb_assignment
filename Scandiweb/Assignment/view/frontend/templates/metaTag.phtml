@@ -1,9 +1,9 @@
-  <?php 
+<?php
       $baseUrl = $block->getBaseUrl();
       $storeLanguage = $block->currentStore();
       $cmsPageUrl = $block->getCmsIdentifier();
       $checkCmsPage = $block->checkIsAvailable();
-    ?>
-<?php if($checkCmsPage){ ?> 
-  <link rel="alternate" hreflang="<?=$storeLanguage?>" href="<?=$baseUrl.$cmsPageUrl?>" />
+?>
+<?php if ($checkCmsPage) { ?> 
+  <link rel="alternate" hreflang="<?=/* @noEscape */$storeLanguage?>" href="<?=/* @noEscape */$baseUrl.$cmsPageUrl?>" />
 <?php } ?>

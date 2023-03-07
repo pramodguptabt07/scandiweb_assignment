@@ -15,127 +15,150 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class CustomerAttribute for Create Customer Attribute using Data Patch.
- * @package RH\Helloworld\Setup\Patch\Data
+ *
  */
 class CustomerAttribute implements DataPatchInterface, PatchRevertableInterface
 {
    /**
     * @var ModuleDataSetupInterface
     */
-   private $moduleDataSetup;
+    private $moduleDataSetup;
 
    /**
     * @var EavSetupFactory
     */
-   private $eavSetupFactory;
+    private $eavSetupFactory;
    
    /**
     * @var ProductCollectionFactory
     */
-   private $productCollectionFactory;
+    private $productCollectionFactory;
    
    /**
     * @var LoggerInterface
     */
-   private $logger;
+    private $logger;
    
    /**
     * @var Config
     */
-   private $eavConfig;
+    private $eavConfig;
    
    /**
     * @var \Magento\Customer\Model\ResourceModel\Attribute
     */
-   private $attributeResource;
+    private $attributeResource;
 
     /**
      * @var AttributeRepositoryInterface
      */
     private $attributeRepository;
 
+    /**
+     * @var \Magento\Eav\Model\ResourceModel\Entity\Attribute
+     */
+    protected $_eavAttribute;
+
    /**
     * CustomerAttribute Constructor
     * @param EavSetupFactory $eavSetupFactory
     * @param Config $eavConfig
     * @param LoggerInterface $logger
+    * @param \Magento\Eav\Api\AttributeRepositoryInterface $attributeRepository
     * @param \Magento\Customer\Model\ResourceModel\Attribute $attributeResource
+    * @param   \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute
     * @param \Magento\Framework\Setup\ModuleDataSetupInterface $moduleDataSetup
+    * @return void
     */
-   public function __construct(
-       EavSetupFactory $eavSetupFactory,
-       Config $eavConfig,
-       LoggerInterface $logger,
-       AttributeRepositoryInterface $attributeRepository,
-       \Magento\Customer\Model\ResourceModel\Attribute $attributeResource,
-       \Magento\Framework\Setup\ModuleDataSetupInterface $moduleDataSetup
-   ) {
-       $this->eavSetupFactory = $eavSetupFactory;
-       $this->eavConfig = $eavConfig;
-       $this->logger = $logger;
-       $this->attributeResource = $attributeResource;
-       $this->moduleDataSetup = $moduleDataSetup;
-       $this->attributeRepository = $attributeRepository;
-   }
+    public function __construct(
+        EavSetupFactory $eavSetupFactory,
+        Config $eavConfig,
+        LoggerInterface $logger,
+        AttributeRepositoryInterface $attributeRepository,
+        \Magento\Customer\Model\ResourceModel\Attribute $attributeResource,
+        \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute,
+        \Magento\Framework\Setup\ModuleDataSetupInterface $moduleDataSetup
+    ) {
+        $this->eavSetupFactory = $eavSetupFactory;
+        $this->eavConfig = $eavConfig;
+        $this->logger = $logger;
+        $this->attributeResource = $attributeResource;
+        $this->moduleDataSetup = $moduleDataSetup;
+        $this->attributeRepository = $attributeRepository;
+        $this->_eavAttribute = $eavAttribute;
+    }
 
    /**
-    * {@inheritdoc}
+    * @inheritdoc
     */
-   public function apply()
-   {
-       $this->moduleDataSetup->getConnection()->startSetup();
-       $this->addPhoneAttribute();
-       $this->moduleDataSetup->getConnection()->endSetup();
-   }
+    public function apply()
+    {
+        $this->moduleDataSetup->getConnection()->startSetup();
+        $this->addPhoneAttribute();
+        $this->moduleDataSetup->getConnection()->endSetup();
+    }
 
    /**
+    * Update the Phone attribute value
+    *
     * @throws \Magento\Framework\Exception\AlreadyExistsException
     * @throws \Magento\Framework\Exception\LocalizedException
     * @throws \Zend_Validate_Exception
     */
-   public function addPhoneAttribute()
-   {
-       $eavSetup = $this->eavSetupFactory->create();
-
-   
-
-
-       $eavSetup->updateAttribute(\Magento\Customer\Model\Customer::ENTITY,
-       34,[
+    public function addPhoneAttribute()
+    {
+        $eavSetup = $this->eavSetupFactory->create();
+        $attributeId = $this->_eavAttribute
+        ->getIdByCode(\Magento\Customer\Model\Customer::ENTITY, 'telephone');
+        $eavSetup->updateAttribute(
+            \Magento\Customer\Model\Customer::ENTITY,
+            $attributeId,
+            [
                 'is_required' => false
-            ]);
+            ]
+        );
 
-       $attribute = $this->eavConfig->getAttribute(Customer::ENTITY, 'telephone');
+        $attribute = $this->eavConfig->getAttribute(Customer::ENTITY, 'telephone');
   
-       $this->attributeResource->save($attribute);
-   }
+        $this->attributeResource->save($attribute);
+    }
 
-   public function getAttributeId()
+    /**
+     * Get Attribute Id
+     *
+     * @return int|null
+     */
+
+    public function getAttributeId()
     {
         $attribute = $this->attributeRepository->get(Customer::ENTITY, 'telephone');
         return $attribute->getAttributeId();
     }
 
    /**
-    * {@inheritdoc}
+    * @inheritdoc
     */
-   public static function getDependencies()
-   {
-       return [];
-   }
+    public static function getDependencies()
+    {
+        return [];
+    }
 
    /**
+    * Rollback all changes, done by this patch
     *
+    * @return void
     */
-   public function revert()
-   {
-   }
+    public function revert()
+    {
+        $this->moduleDataSetup->getConnection()->startSetup();
+        $this->moduleDataSetup->getConnection()->endSetup();
+    }
 
    /**
-    * {@inheritdoc}
+    * @inheritdoc
     */
-   public function getAliases()
-   {
-       return [];
-   }
+    public function getAliases()
+    {
+        return [];
+    }
 }
